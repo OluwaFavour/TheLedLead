@@ -18,12 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import homeView
+from .views import homeView, signup, login_view as login, logout_view as logout
 
 urlpatterns = [
     path('books/', include('books.urls')), # Books urls
     path('', homeView, name="home_view"),
     path('admin/', admin.site.urls),
+    path('signup/', signup, name='signup'),
+    path('login/', login, name='login'),
+    path('logout/', logout, name='logout')
 ]
 
 # Serve media files during development

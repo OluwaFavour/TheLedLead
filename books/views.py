@@ -1,53 +1,143 @@
 from typing import Any
-from django import http
-from django.http import HttpResponse, JsonResponse
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.views.generic import ListView
+from django.contrib.admin.views.decorators import staff_member_required
 from .models import Book, Rating, Comment
 
-# Create your views here.
-class ListBooksView(ListView):
-    model = Book
-    
-    def render_to_response(self, context: dict[str, Any], **response_kwargs: Any) -> HttpResponse:
-        # Get list of books from context
-        book_list = context.get('object_list', [])
-        
-        # Create a list of dictionaries containing book details from the book list
-        books = [
-            {'id': book.id,
-            'title': book.title,
-            'image_url': book.image_url.url if book.image_url else '',
-            'content': book.content,
-            'date_published': book.date_published,
-            'published_by': {
-                'username': book.published_by.username if book.published_by else '',
-                'email': book.published_by.email if book.published_by else '',
-            }
-            } for book in book_list]
-        
-        # Return the list of books as JSON
-        return JsonResponse(books, safe=False)
 
-def bookView(request, id):
-    if request.method == 'GET':
+# Create your views here.
+
+# localhost:8000/books/
+@permission_classes([AllowAny])
+class ListBooksView(APIView):
+    def get(self, request):
+        if request.method == "GET":
+            # Get list of books from context
+            book_list = Book.objects.all()
+
+            # Create a list of dictionaries containing book details from the book list
+            books = [
+                {
+                    "id": book.id,
+                    "title": book.title,
+                    "image_url": book.image_url.url if book.image_url else "",
+                    "content": book.content,
+                    "date_published": book.date_published,
+                    "published_by": {
+                        "username": book.published_by.username
+                        if book.published_by
+                        else "",
+                        "email": book.published_by.email if book.published_by else "",
+                    },
+                }
+                for book in book_list
+            ]
+
+            # Return the list of books as JSON
+            return Response(books, status=status.HTTP_200_OK)
+
+
+# localhost:8000/books/book<int:id>/
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def bookView(request, id: int):
+    if request.method == "GET":
         # Get book
         book = get_object_or_404(Book, id=id)
         # Get list of comments under the book
         comments = Comment.objects.filter(book_id=id)
-        if not  comments:
-            print("Comment is empty")
         # Get list of ratings
         ratings = Rating.objects.filter(book_id=id)
-        if not ratings:
-            print("Ratings is zero")
-            return HttpResponse(book)
-        # Get total rating
-        total_rating = 0
-        for rating in ratings:
-            total_rating += rating
-        # Get number of ratings
-        num_of_ratings = ratings.count()
         # Get average rating
-        average_rating = round(float(total_rating / num_of_ratings), 1)
-        return HttpResponse(book)
+        average_rating: float = (
+            round(float(sum(rating.rating for rating in ratings) / len(ratings)), 1)
+            if ratings
+            else 0
+        )
+
+        # Create a dictionary containing book details
+        data = {
+            "id": book.id,
+            "title": book.title,
+            "image_url": book.image_url.url if book.image_url else "",
+            "content": book.content,
+            "date_published": book.date_published,
+            "published_by": {
+                "username": book.published_by.username if book.published_by else "",
+                "email": book.published_by.email if book.published_by else "",
+            },
+            "comments": [
+                {
+                    "id": comment.id,
+                    "content": comment.content,
+                    "date_posted": comment.date_posted,
+                    "user": {
+                        "username": comment.user.username,
+                        "email": comment.user.email,
+                    },
+                }
+                for comment in comments
+            ],
+            "ratings": [
+                {
+                    "id": rating.id,
+                    "rating": rating.rating,
+                    "user": {
+                        "username": rating.user.username,
+                        "email": rating.user.email,
+                    },
+                }
+                for rating in ratings
+            ],
+            "total_comments": len(comments),
+            "average_rating": average_rating,
+        }
+
+        # Return the book as JSON
+        return Response(data, status=status.HTTP_200_OK)
+
+
+# localhost:8000/books/upload/
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def uploadBookView(request) -> HttpResponse:
+    if request.method == "POST":
+        # Check if user is staff (admin)
+        if not request.user.is_staff:
+            return Response(
+                {"message": "You are not authorized to perform this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+            
+        # Access HttpRequest object
+        http_request = request._request
+        # Get book details from request
+        title = http_request.POST.get("title")
+        content = http_request.POST.get("content")
+        image_url = http_request.FILES.get("image_url")
+        published_by = http_request.user
+
+        # Create book
+        book = Book.objects.create(
+            title=title, content=content, image_url=image_url, published_by=published_by
+        )
+
+        # Return the book as JSON
+        data = {
+            "id": book.id,
+            "title": book.title,
+            "image_url": book.image_url.url if book.image_url else "",
+            "content": book.content,
+            "date_published": book.date_published,
+            "published_by": {
+                "username": book.published_by.username if book.published_by else "",
+                "email": book.published_by.email if book.published_by else "",
+            },
+        }
+        return Response(data, status=status.HTTP_201_CREATED)
+
