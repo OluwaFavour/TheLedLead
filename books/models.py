@@ -7,7 +7,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 def book_image_path(instance, filename):
     # Build the file path based on the book's title
-    return f'book_images/{instance.book.title}/{filename}'
+    return f'book_covers/{instance.title}/{filename}'
 
 class Book(models.Model):
 
@@ -18,6 +18,7 @@ class Book(models.Model):
     published_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
+        ordering = ["-date_published"]
         verbose_name = ("book")
         verbose_name_plural = ("books")
 
@@ -35,6 +36,7 @@ class Comment(models.Model):
     date_posted = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["date_posted"]
         verbose_name = ("comment")
         verbose_name_plural = ("comments")
 
