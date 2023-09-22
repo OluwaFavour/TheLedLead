@@ -2,6 +2,8 @@
 
 TheLedLead API empowers users to engage with TheLedLead website, offering a range of interactive functionalities. Users can seamlessly create accounts, log in, log out, explore available books, post comments, and rate books. For book uploads, exclusive privileges are granted to admin users, enabling them to contribute new content to the platform.
 
+`Get csrf token from cookies and add it to the header of each POST request`
+
 ## Endpoints
 
 - **Home View**
