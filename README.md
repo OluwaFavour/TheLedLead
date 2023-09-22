@@ -204,6 +204,12 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
   - Method: `POST`
   - Description: Upload a new book to the platform. Only admin users are authorized to perform this action.
   - Authentication: Required (admin user).
+  - Request:
+    - Body:
+      - `title` (string, required): The title of the book.
+      - `image_url` (string, default: empty string): The URL of the book cover image.
+      - `content` (string, required): The content of the book.
+      - `date_published` (string, default: current date and time): The date and time when the book was published.
   - Responses:
     - Status: 201 Created
     - Body:
@@ -227,6 +233,9 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
   - Method: `POST`
   - Description: Add a comment to a specific book.
   - Authentication: Required (logged-in user).
+  - Request:
+    - Body:
+      - `content` (string, required): The comment to add to the book.
   - Responses:
     - Status: 201 Created
     - Body:
@@ -248,6 +257,9 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
   - Method: `POST`
   - Description: Add a rating (1-5) to a specific book.
   - Authentication: Required (logged-in user).
+  - Request:
+    - Body:
+      - `rating` (integer, required): The rating to add to the book.
   - Responses:
     - Staus: 201 Created
     - Body:
