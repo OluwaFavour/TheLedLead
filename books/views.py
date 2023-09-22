@@ -41,9 +41,14 @@ class ListBooksView(APIView):
 
 # localhost:8000/books/<int:id>/
 @api_view(["GET"])
-@permission_classes([AllowAny])
 def bookView(request, id: int):
     if request.method == "GET":
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return Response(
+                {"message": "You are not logged in"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         # Get book
         book = get_object_or_404(Book, id=id)
         # Get list of comments under the book
@@ -95,6 +100,10 @@ def bookView(request, id: int):
             "average_rating": average_rating,
         }
 
+        # Mark book as read by user
+        if not book.read_by.filter(id=request.user.id).exists():
+            book.read_by.add(request.user)
+            book.save()
         # Return the book as JSON
         return Response(data, status=status.HTTP_200_OK)
 

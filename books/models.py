@@ -15,6 +15,7 @@ class Book(models.Model):
     image_url = models.ImageField(upload_to=book_image_path, blank=True, null=True)
     content = models.TextField(blank=False, null=False)
     date_published = models.DateTimeField(auto_now=True)
+    read_by = models.ManyToManyField(User, through='ReadBook', related_name='books_read', blank=True)
     published_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
@@ -27,6 +28,14 @@ class Book(models.Model):
 
     def get_absolute_url(self):
         return reverse("book_detail", kwargs={"id": self.id})
+
+class ReadBook(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    read_date = models.DateTimeField()
+
+    class Meta:
+        unique_together = ('user', 'book')
 
 class Comment(models.Model):
 
