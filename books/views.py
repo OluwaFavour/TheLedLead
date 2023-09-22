@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from .models import Book, Rating, Comment
 
 
@@ -120,6 +121,11 @@ def uploadBookView(request):
         # Get book details from request
         title = http_request.POST.get("title")
         content = http_request.POST.get("content")
+        if not title or not content:
+            return Response(
+                {"message": "Title or content cannot be empty"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         image_url = http_request.FILES.get("image_url")
         published_by = http_request.user
 
@@ -142,6 +148,97 @@ def uploadBookView(request):
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
+@api_view(["PATCH"])
+def updateBookView(request, id: int):
+    if request.method == "PATCH":
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return Response(
+                {"message": "You are not logged in"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        if not request.user.is_staff:
+            return Response(
+                {"message": "You are not authorized to perform this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Attempt to get the book by ID, and handle the case where it doesn't exist
+        try:
+            book = Book.objects.get(id=id)
+        except Book.DoesNotExist:
+            return Response(
+                {"message": "Book not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        else:
+            # Get book details from request
+            title = request.data.get("title")
+            content = request.data.get("content")
+            image_url = request.FILES.get("image_url")
+            
+            # Check if all fields are all empty
+            if not title and not content and not image_url:
+                return Response(
+                    {"message": "Nothing changed"},
+                    status=status.HTTP_200_OK
+                )
+            
+            # Update book
+            if title:
+                book.title = title
+            if content:
+                book.content = content
+            if image_url:
+                book.image_url = image_url
+            book.date_published = timezone.now()
+            
+            # Save update
+            book.save()
+            
+             # Return the book as JSON
+            data = {
+                "id": book.id,
+                "title": book.title,
+                "image_url": book.image_url.url if book.image_url else "",
+                "content": book.content,
+                "date_published": book.date_published,
+                "published_by": {
+                    "username": book.published_by.username if book.published_by else "",
+                    "email": book.published_by.email if book.published_by else "",
+                },
+            }
+            return Response(data, status=status.HTTP_200_OK)
+            
+@api_view(["DELETE"])
+def deleteBookView(request, id: int):
+    if request.method == "DELETE":
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return Response(
+                {"message": "You are not logged in"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        if not request.user.is_staff:
+            return Response(
+                {"message": "You are not authorized to perform this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Attempt to get the book by ID, and handle the case where it doesn't exist
+        try:
+            book = Book.objects.get(id=id)
+        except Book.DoesNotExist:
+            return Response(
+                {"message": "Book not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Delete the book
+        book.delete()
+        return Response(
+            {"message": "Book deleted successfully"}, status=status.HTTP_200_OK
+        )
 
 # localhost:8000/books/<int:id>/comment/ (name='add_comment')
 @api_view(["POST"])

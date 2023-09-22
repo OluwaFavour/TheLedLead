@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 # localhost:8000/
@@ -29,6 +29,9 @@ def logout_view(request):
 @permission_classes([AllowAny])
 def signup(request):
     if request.method == 'POST':
+        # Check if user is authenticated
+        if request.user.is_authenticated:
+            return Response({'message': 'Already logged in'}, status=status.HTTP_400_BAD_REQUEST)
         # Access HttpRequest object
         http_request = request._request
         username = http_request.POST.get('username')
@@ -61,13 +64,25 @@ def signup(request):
 @permission_classes([AllowAny])
 def login_view(request):
     if request.method == 'POST':
+        # Check if user is authenticated
+        if request.user.is_authenticated:
+            return Response({'message': 'Already logged in'}, status=status.HTTP_400_BAD_REQUEST)
         # Access HttpRequest object
         http_request = request._request
         username = http_request.POST.get('username')
+        # Check if username is provided
+        if not username:
+            return Response({'message': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if user exists
+        if not User.objects.filter(username=username).exists():
+            return Response({'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
         password = http_request.POST.get('password')
+        # Check if password is provided
+        if not password:
+            return Response({'message': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
         user = authenticate(http_request, username=username, password=password)
 
-        # Check if user exists and login
+        # Check if user password is correct and login
         if user is not None:
             login(http_request, user)
             return Response({'message': 'Login successful'})

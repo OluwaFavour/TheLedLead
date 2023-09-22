@@ -22,6 +22,7 @@ from .views import homeView, signup, login_view as login, logout_view as logout
 
 urlpatterns = [
     path('books/', include('books.urls')), # Books urls
+    path('tll-admin/', include('TLLAdmin.urls')), # TLLAdmin urls
     path('', homeView, name="home_view"),
     path('admin/', admin.site.urls),
     path('signup/', signup, name='signup'),
@@ -32,5 +33,3 @@ urlpatterns = [
 # Serve media files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    
-    # www.l.com/books/

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'books.apps.BooksConfig',
+    'TLLAdmin.apps.TlladminConfig'
 ]
 
 MIDDLEWARE = [

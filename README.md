@@ -277,7 +277,7 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
         }
         ```
 
-### Authentication
+## Authentication
 
 - **Logout View**: Requires user authentication. The user must be logged in to log out.
 
