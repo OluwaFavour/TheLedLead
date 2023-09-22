@@ -13,9 +13,11 @@ def homeView(request):
 
 # localhost:8000/logout/
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def logout_view(request):
     if request.method == 'GET':
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return Response({'message': 'Not logged in'}, status=status.HTTP_401_UNAUTHORIZED)
         # Access HttpRequest object
         http_request = request._request
         # Logout the user

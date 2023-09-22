@@ -1,11 +1,10 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.contrib.admin.views.decorators import staff_member_required
 from .models import Book, Rating, Comment
 
 
@@ -99,11 +98,16 @@ def bookView(request, id: int):
         return Response(data, status=status.HTTP_200_OK)
 
 
-# localhost:8000/books/upload/
+# localhost:8000/books/upload/ (name='upload_book')
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def uploadBookView(request) -> HttpResponse:
+def uploadBookView(request):
     if request.method == "POST":
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return Response(
+                {"message": "You are not logged in"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         # Check if user is staff (admin)
         if not request.user.is_staff:
             return Response(
@@ -139,11 +143,16 @@ def uploadBookView(request) -> HttpResponse:
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-# localhost:8000/books/<int:id>/comment/
+# localhost:8000/books/<int:id>/comment/ (name='add_comment')
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def addCommentsView(request, book_id: int):
+def addCommentsView(request, id: int):
     if request.method == "POST":
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return Response(
+                {"message": "You are not logged in"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         # Access HttpRequest object
         http_request = request._request
         # Get comment details from request
@@ -151,7 +160,7 @@ def addCommentsView(request, book_id: int):
         user = http_request.user
 
         # Create comment
-        comment = Comment.objects.create(content=content, book_id=book_id, user=user)
+        comment = Comment.objects.create(content=content, book_id=id, user=user)
 
         # Return the comment as JSON
         data = {
@@ -166,19 +175,24 @@ def addCommentsView(request, book_id: int):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-# localhost:8000/books/<int:id>/rate/
+# localhost:8000/books/<int:id>/rate/ (name='add_rating')
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def addRatingView(request, book_id: int):
+def addRatingView(request, id: int):
     if request.method == "POST":
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return Response(
+                {"message": "You are not logged in"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         # Access HttpRequest object
         http_request = request._request
         # Get rating details from request
-        rating = http_request.POST.get("rating")
+        rating = int(http_request.POST.get("rating"))
         user = http_request.user
 
         # Create rating
-        rating = Rating.objects.create(rating=rating, book_id=book_id, user=user)
+        rating = Rating.objects.create(rating=rating, book_id=id, user=user)
 
         # Return the rating as JSON
         data = {
