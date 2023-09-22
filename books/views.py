@@ -190,6 +190,23 @@ def addRatingView(request, id: int):
         # Get rating details from request
         rating = int(http_request.POST.get("rating"))
         user = http_request.user
+        
+        # Check if user has already rated the book
+        if Rating.objects.filter(book_id=id, user=user).exists():
+            # Update previous rating with new rating
+            rating = Rating.objects.get(book_id=id, user=user)
+            rating.rating = rating
+            
+            # Return the rating as JSON
+            data = {
+                "id": rating.id,
+                "rating": rating.rating,
+                "user": {
+                    "username": rating.user.username,
+                    "email": rating.user.email,
+                },
+            }
+            return Response(data, status=status.HTTP_200_OK)
 
         # Create rating
         rating = Rating.objects.create(rating=rating, book_id=id, user=user)
