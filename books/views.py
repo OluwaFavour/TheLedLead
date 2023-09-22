@@ -1,4 +1,3 @@
-from typing import Any
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -9,8 +8,6 @@ from django.shortcuts import get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import Book, Rating, Comment
 
-
-# Create your views here.
 
 # localhost:8000/books/
 @permission_classes([AllowAny])
@@ -42,7 +39,7 @@ class ListBooksView(APIView):
             return Response(books, status=status.HTTP_200_OK)
 
 
-# localhost:8000/books/book<int:id>/
+# localhost:8000/books/<int:id>/
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def bookView(request, id: int):
@@ -113,7 +110,7 @@ def uploadBookView(request) -> HttpResponse:
                 {"message": "You are not authorized to perform this action"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-            
+
         # Access HttpRequest object
         http_request = request._request
         # Get book details from request
@@ -141,3 +138,55 @@ def uploadBookView(request) -> HttpResponse:
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
+
+# localhost:8000/books/<int:id>/comment/
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def addCommentsView(request, book_id: int):
+    if request.method == "POST":
+        # Access HttpRequest object
+        http_request = request._request
+        # Get comment details from request
+        content = http_request.POST.get("content")
+        user = http_request.user
+
+        # Create comment
+        comment = Comment.objects.create(content=content, book_id=book_id, user=user)
+
+        # Return the comment as JSON
+        data = {
+            "id": comment.id,
+            "content": comment.content,
+            "date_posted": comment.date_posted,
+            "user": {
+                "username": comment.user.username,
+                "email": comment.user.email,
+            },
+        }
+        return Response(data, status=status.HTTP_201_CREATED)
+
+
+# localhost:8000/books/<int:id>/rate/
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def addRatingView(request, book_id: int):
+    if request.method == "POST":
+        # Access HttpRequest object
+        http_request = request._request
+        # Get rating details from request
+        rating = http_request.POST.get("rating")
+        user = http_request.user
+
+        # Create rating
+        rating = Rating.objects.create(rating=rating, book_id=book_id, user=user)
+
+        # Return the rating as JSON
+        data = {
+            "id": rating.id,
+            "rating": rating.rating,
+            "user": {
+                "username": rating.user.username,
+                "email": rating.user.email,
+            },
+        }
+        return Response(data, status=status.HTTP_201_CREATED)
