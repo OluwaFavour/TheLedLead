@@ -8,6 +8,15 @@ from django.utils import timezone
 from .models import Book, Rating, Comment
 
 
+def getAverageRating(book_id: int) -> float:
+    ratings = Rating.objects.filter(book_id=book_id)
+    average_rating: float = (
+        round(float(sum(rating.rating for rating in ratings) / len(ratings)), 1)
+        if ratings
+        else 0
+    )
+    return average_rating
+    
 # localhost:8000/books/
 @permission_classes([AllowAny])
 class ListBooksView(APIView):
@@ -30,6 +39,9 @@ class ListBooksView(APIView):
                         else "",
                         "email": book.published_by.email if book.published_by else "",
                     },
+                    "average_rating": getAverageRating(book.id),
+                    "total_ratings": Rating.objects.filter(book_id=book.id).count(),
+                    "total_comments": Comment.objects.filter(book_id=book.id).count(),
                 }
                 for book in book_list
             ]
@@ -156,6 +168,7 @@ def uploadBookView(request):
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
+# localhost:8000/books/<int:id>/update/ (name='update_book')
 @api_view(["PATCH"])
 def updateBookView(request, id: int):
     if request.method == "PATCH":
@@ -217,7 +230,8 @@ def updateBookView(request, id: int):
                 },
             }
             return Response(data, status=status.HTTP_200_OK)
-            
+
+# localhost:8000/books/<int:id>/update/ (name='update_book')            
 @api_view(["DELETE"])
 def deleteBookView(request, id: int):
     if request.method == "DELETE":
@@ -248,7 +262,7 @@ def deleteBookView(request, id: int):
             {"message": "Book deleted successfully"}, status=status.HTTP_200_OK
         )
 
-# localhost:8000/books/<int:id>/comment/ (name='add_comment')
+# localhost:8000/books/comment/<int:id>/ (name='add_comment')
 @api_view(["POST"])
 def addCommentsView(request, id: int):
     if request.method == "POST":
@@ -280,7 +294,7 @@ def addCommentsView(request, id: int):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-# localhost:8000/books/<int:id>/rate/ (name='add_rating')
+# localhost:8000/books/rate/<int:id>/ (name='add_rating')
 @api_view(["POST"])
 def addRatingView(request, id: int):
     if request.method == "POST":

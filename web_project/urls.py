@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import homeView, signup, login_view as login, logout_view as logout
+from .views import homeView, signup, login_view as login, logout_view as logout, changePassword
 
 urlpatterns = [
     path('books/', include('books.urls')), # Books urls
@@ -27,7 +27,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', signup, name='signup'),
     path('login/', login, name='login'),
-    path('logout/', logout, name='logout')
+    path('logout/', logout, name='logout'),
+    path('change-password/', changePassword, name='change_password'),
 ]
 
 # Serve media files during development
