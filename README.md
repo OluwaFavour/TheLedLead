@@ -2,7 +2,7 @@
 
 TheLedLead API empowers users to engage with TheLedLead website, offering a range of interactive functionalities. Users can seamlessly create accounts, log in, log out, explore available books, post comments, and rate books. For book uploads, exclusive privileges are granted to admin users, enabling them to contribute new content to the platform.
 
-`Get csrf token from cookies and add it to the header of each POST request`
+`Get token from login, and signup`
 
 ## Endpoints
 
@@ -22,9 +22,9 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
       ```
 
 - **Logout View**
-  - URL: `/logout/`
+  - URL: `/logout/` or `/logoutall/`
   - Method: `GET`
-  - Description: Log out the currently authenticated user.
+  - Description: `\logout\` logs out the user from the current session, while `\logoutall\` logs out the user from all sessions.
   - Authentication: Required (user must be authenticated).
   - Response:
     - Status Code: 200 OK
@@ -62,7 +62,9 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
 
         ```json
         {
-            "message": "User created successfully"
+            "message": "User created successfully",
+            "user": {"id": user.id, "username": user.username, "email": user.email},
+            "token": token
         }
         ```
 
@@ -115,7 +117,9 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
 
         ```json
         {
-            "message": "Login successful"
+            "message": "Login successful",
+            "user": {"id": user.id, "username": user.username, "email": user.email},
+            "token": token
         }
         ```
 
@@ -750,7 +754,7 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
     - This endpoint is intended for admin users only. It allows them to retrieve the number of views for a specific book.
 
 - **Get Yearly Views**
-  - URL: `/tll-admin/views/<int:year>/`
+  - URL: `/tll-admin/views/year=<int:year>/`
   - Method: `GET`
   - Description: Retrieve the number of books read and views for a specified year.
   - Authentication: Required, user must be logged in as an admin.
@@ -787,7 +791,7 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
         ```
 
 - **Get Yearly Views Per Book**
-  - URL: `/tll-admin/views/<int:year>/<int:id>/`
+  - URL: `/tll-admin/views/year=<int:year>/<int:id>/`
   - Method: `GET`
   - Description: Retrieve the number of views for a specific book in a specified year.
   - Authentication: Required, user must be logged in as an admin.
@@ -825,7 +829,7 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
         ```
 
 - **Get Monthly Views**
-  - URL: `/tll-admin/views/<int:year>/<int:month>/`
+  - URL: `/tll-admin/views/year=<int:year>/month=<int:month>/`
   - Method: `GET`
   - Description: Retrieve the number of books read and views for a specified month within a year.
   - Authentication: Required, user must be logged in as an admin.
@@ -865,7 +869,7 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
         ```
 
 - **Get Monthly Views Per Book**
-  - URL: `/tll-admin/views/<int:year>/<int:month>/<int:id>/`
+  - URL: `/tll-admin/views/year=<int:year>/month=<int:month>/<int:id>/`
   - Method: `GET`
   - Description: Retrieve the number of views for a specific book in a specified month and year.
   - Authentication: Required, user must be logged in as an admin.

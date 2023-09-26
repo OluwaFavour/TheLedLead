@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from knox import views as knox_views
 from .views import homeView, signup, login_view as login, logout_view as logout, changePassword
 
 urlpatterns = [
@@ -27,7 +28,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', signup, name='signup'),
     path('login/', login, name='login'),
-    path('logout/', logout, name='logout'),
+    path('logout/', knox_views.LogoutView.as_view(), name='logout'),
+    path('logoutall/', knox_views.LogoutAllView.as_view(), name='logoutall'),
     path('change-password/', changePassword, name='change_password'),
 ]
 

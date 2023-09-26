@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'knox',
     'books.apps.BooksConfig',
     'TLLAdmin.apps.TlladminConfig'
 ]
@@ -133,3 +134,8 @@ MEDIA_URL = '/media/'
 
 # Define the absolute filesystem path to the directory that will hold media.
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Knox Authentication Settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+}
