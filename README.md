@@ -1,6 +1,7 @@
 # TheLedLead API Documentation
 
-TheLedLead API empowers users to engage with TheLedLead website, offering a range of interactive functionalities. Users can seamlessly create accounts, log in, log out, explore available books, post comments, and rate books. For book uploads, exclusive privileges are granted to admin users, enabling them to contribute new content to the platform.
+[TheLedLead](https://theledlead.onrender.com/) is a book publishing website that allows users to read and publish books. This API documentation provides information about the endpoints available on the website, including the required parameters and responses. The API is built using Django REST Framework and is hosted on [Render](https://render.com/).
+The URL for the API is <https://theledlead.onrender.com/>
 
 `Get token from login, and signup`
 
@@ -24,7 +25,7 @@ TheLedLead API empowers users to engage with TheLedLead website, offering a rang
 - **Logout View**
   - URL: `/logout/` or `/logoutall/`
   - Method: `GET`
-  - Description: `\logout\` logs out the user from the current session, while `\logoutall\` logs out the user from all sessions.
+  - Description: `/logout/` logs out the user from the current session, while `/logoutall/` logs out the user from all sessions.
   - Authentication: Required (user must be authenticated).
   - Response:
     - Status Code: 200 OK
