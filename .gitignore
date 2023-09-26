@@ -4,3 +4,5 @@ media/
 migrations/
 db.sqlite3
 templates/
+.env
+data.json
