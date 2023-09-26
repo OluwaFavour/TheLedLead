@@ -134,6 +134,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+if not DEBUG:
+    # Tell Django to copy statics to the `staticfiles` directory
+    # in your application directory on Render.
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+    # Turn on WhiteNoise storage backend that takes care of compressing static files
+    # and creating unique names for each version so they can safely be cached forever.
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -150,11 +159,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
 }
 
-# Set SECURE_SSL_REDIRECT to True to redirect all non-HTTPS requests to HTTPS
-SECURE_SSL_REDIRECT = True
+if not DEBUG:
+    # Set SECURE_SSL_REDIRECT to True to redirect all non-HTTPS requests to HTTPS
+    SECURE_SSL_REDIRECT = True
 
-# Set CSRF_COOKIE_SECURE to True to prevent CSRF attacks
-CSRF_COOKIE_SECURE = True
+    # Set CSRF_COOKIE_SECURE to True to prevent CSRF attacks
+    CSRF_COOKIE_SECURE = True
 
-# Set SESSION_COOKIE_SECURE to True to prevent session hijacking
-SESSION_COOKIE_SECURE = True
+    # Set SESSION_COOKIE_SECURE to True to prevent session hijacking
+    SESSION_COOKIE_SECURE = True
