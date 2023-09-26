@@ -3,7 +3,17 @@
 [TheLedLead](https://theledlead.onrender.com/) is a book publishing website that allows users to read and publish books. This API documentation provides information about the endpoints available on the website, including the required parameters and responses. The API is built using Django REST Framework and is hosted on [Render](https://render.com/).
 The URL for the API is <https://theledlead.onrender.com/>
 
-`Get token from login, and signup`
+`Get token from login, and signup and add it to the header of the requests that require authorization`
+
+```json
+    "request" : {
+        "header" : {
+        "Authorization" : "Token <token>"
+        }
+    }
+```
+
+`Replace <token> with the token`
 
 ## Endpoints
 
