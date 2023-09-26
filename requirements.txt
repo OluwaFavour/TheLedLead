@@ -2,7 +2,7 @@ asgiref==3.7.2
 cffi==1.15.1
 cryptography==41.0.4
 dj-database-url==2.1.0
-Django
+Django==4.2.5
 django-rest-knox==4.2.0
 djangorestframework==3.14.0
 Pillow==10.0.0
