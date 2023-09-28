@@ -1,14 +1,14 @@
 # TheLedLead API Documentation
 
-[TheLedLead](https://theledlead.onrender.com/) is a book publishing website that allows users to read and publish books. This API documentation provides information about the endpoints available on the website, including the required parameters and responses. The API is built using Django REST Framework and is hosted on [Render](https://render.com/).
+[TheLedLead](https://theledlead.onrender.com/) is a book publishing website that allows users to read and publish books. This API documentation provides information about the endpoints available on the website, including the required parameters and responses. The API is built using the Django REST Framework and is hosted on [Render](https://render.com/).
 The URL for the API is <https://theledlead.onrender.com/>
 
 `Get token from login, and signup and add it to the header of the requests that require authorization`
 
 ```json
-    "request" : {
-        "header" : {
-        "Authorization" : "Token <token>"
+    "request": {
+        "header": {
+        "Authorization": "Token <token>"
         }
     }
 ```
@@ -244,7 +244,7 @@ The URL for the API is <https://theledlead.onrender.com/>
           ```
 
 - **List Books View**
-  - URL: `/books/`
+  - URL: `/books/` or `tll-admin/books/`
   - Method: `GET`
   - Description: Retrieve a list of books with details, including average rating, total ratings, and total comments.
   - Authentication: Not required.
@@ -276,7 +276,7 @@ The URL for the API is <https://theledlead.onrender.com/>
         ```
 
 - **Book View**
-  - URL: `/books/{id}/`
+  - URL: `/books/{id}/` or `tll-admin/books/{id}/`
   - Method: `GET`
   - Description: Retrieve details of a book including comments, ratings, and reader information.
   - Authentication: Required.
@@ -344,7 +344,7 @@ The URL for the API is <https://theledlead.onrender.com/>
     - When a user successfully retrieves book details, the book is marked as "read" by that user, and the book's readership information is updated.
 
 - **Upload Book View**
-  - URL: `/books/upload/`
+  - URL: `/tll-admin/books/upload/`
   - Method: `POST`
   - Description: Allows authorized staff users to upload a new book.
   - Authentication: Required for staff users.
@@ -413,7 +413,7 @@ The URL for the API is <https://theledlead.onrender.com/>
     - The `published_by` field indicates the user who published the book.
 
 - **Update Book View**
-  - URL: `/books/{id}/update/` (Replace `{id}` with the book's ID)
+  - URL: `/tll-admin/books/edit/{id}/` (Replace `{id}` with the book's ID)
   - Method: `PATCH`
   - Description: Update the details of a book, such as title, content, or image.
   - Authentication: Required for admin users.
@@ -481,7 +481,7 @@ The URL for the API is <https://theledlead.onrender.com/>
     - The `date_published` field is automatically updated to the current date and time when the book is updated.
 
 - **Delete Book View**
-  - URL: `/books/{id}/update/`
+  - URL: `/tll-admin/books/delete/{id}/`
   - Method: `DELETE`
   - Description: Delete a book with the specified ID if the user is authorized and the book exists.
   - Authentication: Required (User must be authenticated and have staff privileges).
