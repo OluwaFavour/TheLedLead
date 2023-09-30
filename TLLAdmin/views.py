@@ -1,8 +1,9 @@
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from knox.auth import TokenAuthentication
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
@@ -21,6 +22,7 @@ def index(request):
 
 # localhost:8000/tll-admin/views/ (name="admin-views")
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def getAllTimeViews(request):
     views = 0
@@ -34,6 +36,7 @@ def getAllTimeViews(request):
 
 # localhost:8000/tll-admin/views/<int:id>/ (name="admin-views-book")
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def getViewsPerBook(request, id: int):
     # Get the book
@@ -46,6 +49,7 @@ def getViewsPerBook(request, id: int):
 
 # localhost:8000/tll-admin/views/year=<int:year>/ (name="admin-views-year")
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def getYearlyViews(request, year: int):
     # Get the number of users who read each book in the specified year
@@ -73,6 +77,7 @@ def getYearlyViews(request, year: int):
 
 # localhost:8000/tll-admin/views/year=<int:year>/<int:id>/ (name="admin-views-year-book")
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def getYearlyViewsPerBook(request, id: int, year: int):
     # Get the book
@@ -88,6 +93,7 @@ def getYearlyViewsPerBook(request, id: int, year: int):
 
 # localhost:8000/tll-admin/views/year=<int:year>/month=<int:month>/ (name="admin-views-month")
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def getMonthlyViews(request, month: int, year: int):
     # Get Month name
@@ -127,6 +133,7 @@ def getMonthlyViews(request, month: int, year: int):
 
 # localhost:8000/tll-admin/views/year=<int:year>/month=<int:month>/<int:id>/ (name="admin-views-month-book")
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def getMonthlyViewsPerBook(request, id: int, month: int, year: int):
     # Get Month name

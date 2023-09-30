@@ -3,12 +3,13 @@
 [TheLedLead](https://theledlead.onrender.com/) is a book publishing website that allows users to read and publish books. This API documentation provides information about the endpoints available on the website, including the required parameters and responses. The API is built using Django REST Framework and is hosted on [Render](https://render.com/).
 The URL for the API is <https://theledlead.onrender.com/>
 
-`Get token from login, and signup and add it to the header of the requests that require authorization`
+`Get Authentication token from login, and signup and add it to the header of the requests that require authorization, and also get csrf token from cookies and add it to the header of requests with POST, PATCH, DELETE methods as X-CSRFToken as shown below`
 
 ```json
     "request" : {
         "header" : {
-        "Authorization" : "Token <token>"
+            "X-CSRFToken" : "<csrf token>",
+            "Authorization" : "Token <token>"
         }
     }
 ```
@@ -145,14 +146,6 @@ The URL for the API is <https://theledlead.onrender.com/>
   
     - Status Code: 400 Bad Request
       - Body:
-        - When user is already logged in:
-
-          ```json
-          {
-              "message": "Already logged in"
-          }
-          ```
-
         - When username is not provided:
 
           ```json

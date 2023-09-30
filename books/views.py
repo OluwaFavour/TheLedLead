@@ -1,9 +1,11 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_protect
+from knox.auth import TokenAuthentication
 from datetime import datetime
 from .models import Book, Rating, Comment
 
@@ -50,6 +52,7 @@ class ListBooksView(APIView):
 
 # localhost:8000/books/<int:id>/
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def bookView(request, id: int):
     # Get book
@@ -112,7 +115,9 @@ def bookView(request, id: int):
 
 
 # localhost:8000/books/upload/ (name='upload_book')
+@csrf_protect
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def uploadBookView(request):
     # Check if user is staff (admin)
@@ -156,7 +161,9 @@ def uploadBookView(request):
 
 
 # localhost:8000/books/<int:id>/update/ (name='update_book')
+@csrf_protect
 @api_view(["PATCH"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def updateBookView(request, id: int):
     if not request.user.is_staff:
@@ -211,7 +218,9 @@ def updateBookView(request, id: int):
 
 
 # localhost:8000/books/<int:id>/update/ (name='update_book')
+@csrf_protect
 @api_view(["DELETE"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def deleteBookView(request, id: int):
     if not request.user.is_staff:
@@ -235,7 +244,9 @@ def deleteBookView(request, id: int):
 
 
 # localhost:8000/books/comment/<int:id>/ (name='add_comment')
+@csrf_protect
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def addCommentsView(request, id: int):
     # Access HttpRequest object
@@ -261,7 +272,9 @@ def addCommentsView(request, id: int):
 
 
 # localhost:8000/books/rate/<int:id>/ (name='add_rating')
+@csrf_protect
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def addRatingView(request, id: int):
     # Access HttpRequest object

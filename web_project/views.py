@@ -1,13 +1,19 @@
+from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.views.decorators.csrf import csrf_protect
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    authentication_classes,
+)
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from knox.auth import AuthToken
+from knox.auth import AuthToken, TokenAuthentication
 
 
 def knoxLogin(user: AbstractBaseUser):
@@ -41,6 +47,7 @@ def homeView(request):
 
 # localhost:8000/logout/
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
     # Access HttpRequest object
@@ -51,14 +58,10 @@ def logout_view(request):
 
 
 # localhost:8000/signup/
+@csrf_protect
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def signup(request):
-    # Check if user is authenticated
-    if request.user.is_authenticated:
-        return Response(
-            {"message": "Already logged in"}, status=status.HTTP_400_BAD_REQUEST
-        )
     # Access HttpRequest object
     http_request = request._request
     username = http_request.POST.get("username")
@@ -108,14 +111,10 @@ def signup(request):
 
 
 # localhost:8000/login/
+@csrf_protect
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_view(request):
-    # Check if user is authenticated
-    if request.user.is_authenticated:
-        return Response(
-            {"message": "Already logged in"}, status=status.HTTP_400_BAD_REQUEST
-        )
     # Access HttpRequest object
     http_request = request._request
     username = http_request.POST.get("username")
@@ -125,10 +124,14 @@ def login_view(request):
             {"message": "Username is required"}, status=status.HTTP_400_BAD_REQUEST
         )
     # Check if user exists
-    if not User.objects.filter(username=username).exists():
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
         return Response(
-            {"message": "User does not exist"}, status=status.HTTP_404_NOT_FOUND
+            {"message": "User does not exist"},
+            status=status.HTTP_404_NOT_FOUND,
         )
+
     password = http_request.POST.get("password")
     # Check if password is provided
     if not password:
@@ -136,7 +139,6 @@ def login_view(request):
             {"message": "Password is required"}, status=status.HTTP_400_BAD_REQUEST
         )
     user = authenticate(http_request, username=username, password=password)
-    print(user)
     # Check if user password is correct and login
     if user is not None:
         return knoxLogin(user)
@@ -148,7 +150,9 @@ def login_view(request):
 
 
 # localhost:8000/change-password/
+@csrf_protect
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def changePassword(request):
     # Access HttpRequest object
