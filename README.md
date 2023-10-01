@@ -35,7 +35,7 @@ The URL for the API is <https://theledlead.onrender.com/>
 
 - **Logout View**
   - URL: `/logout/` or `/logoutall/`
-  - Method: `GET`
+  - Method: `POST`
   - Description: `/logout/` logs out the user from the current session, while `/logoutall/` logs out the user from all sessions.
   - Authentication: Required (user must be authenticated).
   - Response:
