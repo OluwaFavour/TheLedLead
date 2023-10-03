@@ -533,6 +533,15 @@ The URL for the API is <https://theledlead.onrender.com/>
     - Body:
       - `content` (string, required): The content of the comment.
   - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Book not found"
+        }
+        ```
+
     - Status Code: 201 Created
       - Body:
 
@@ -576,6 +585,15 @@ The URL for the API is <https://theledlead.onrender.com/>
     - Body:
       - `rating` (integer, required): The rating to add or update (must be between 1 and 5).
   - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Book not found"
+        }
+        ```
+
     - Status Code: 201 Created
       - Body:
 

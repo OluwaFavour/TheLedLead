@@ -249,6 +249,14 @@ def deleteBookView(request, id: int):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def addCommentsView(request, id: int):
+    # Check if book exists
+    try:
+        book = Book.objects.get(id=id)
+    except Book.DoesNotExist:
+        return Response(
+            {"message": "Book not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
     # Access HttpRequest object
     http_request = request._request
     # Get comment details from request
@@ -256,7 +264,7 @@ def addCommentsView(request, id: int):
     user = http_request.user
 
     # Create comment
-    comment = Comment.objects.create(content=content, book_id=id, user=user)
+    comment = Comment.objects.create(content=content, book=book, user=user)
 
     # Return the comment as JSON
     data = {
@@ -277,6 +285,15 @@ def addCommentsView(request, id: int):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def addRatingView(request, id: int):
+    # Check if book exists
+    try:
+        book = Book.objects.get(id=id)
+    except Book.DoesNotExist:
+        return Response(
+            {"message": "Book not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    
     # Access HttpRequest object
     http_request = request._request
     # Get rating details from request
@@ -290,9 +307,9 @@ def addRatingView(request, id: int):
     user = http_request.user
 
     # Check if user has already rated the book
-    if Rating.objects.filter(book_id=id, user=user).exists():
+    if Rating.objects.filter(book=book, user=user).exists():
         # Update previous rating with new rating
-        ratingObj = Rating.objects.get(book_id=id, user=user)
+        ratingObj = Rating.objects.get(book=book, user=user)
         ratingObj.rating = rating
         ratingObj.save()
 
@@ -308,7 +325,7 @@ def addRatingView(request, id: int):
         return Response(data, status=status.HTTP_200_OK)
 
     # Create rating
-    rating = Rating.objects.create(rating=rating, book_id=id, user=user)
+    rating = Rating.objects.create(rating=rating, book=book, user=user)
 
     # Return the rating as JSON
     data = {
