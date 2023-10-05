@@ -131,6 +131,7 @@ The URL for the API is <https://theledlead.onrender.com/>
         {
             "message": "Login successful",
             "user": {"id": user.id, "username": user.username, "email": user.email},
+            "is_admin": (True or False),
             "token": token
         }
         ```
@@ -525,7 +526,7 @@ The URL for the API is <https://theledlead.onrender.com/>
     - This endpoint requires user authentication, and the user must have staff privileges to delete a book.
 
 - **Add Comment to a Book**
-  - URL: `/books/comment/<int:id>/`
+  - URL: `/books/comment/add/<int:id>/`
   - Method: `POST`
   - Description: Allows an authenticated user to add a comment to a book.
   - Authentication: Required (user must be logged in).
@@ -575,6 +576,265 @@ The URL for the API is <https://theledlead.onrender.com/>
               "message": "Content is required"
           }
           ```
+
+- **View Comment**
+  - URL: `/books/comment/<int:comment_id>/`
+  - Method: `GET`
+  - Description: Retrieves details about a specific comment, including its replies and likes.
+  - Authentication: Required (user must be logged in).
+  - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Comment not found"
+        }
+        ```
+
+    - Status Code: 200 OK
+      - Body:
+
+        ```json
+        {
+            "id": 1,
+            "content": "This is a great book!",
+            "date_posted": "2023-09-25T14:30:00Z",
+            "user": {
+                "username": "john_doe",
+                "email": "john@example.com"
+            },
+            "reply_count": 2,
+            "like_count": 3,
+            "replies": [
+                {
+                    "reply_id": 2,
+                    "content": "I agree!",
+                    "date_posted": "2023-09-25T14:35:00Z",
+                    "user": {
+                        "username": "jane_smith",
+                        "email": "jane@example.com"
+                    }
+                },
+                {
+                    "reply_id": 3,
+                    "content": "Me too!",
+                    "date_posted": "2023-09-25T14:40:00Z",
+                    "user": {
+                        "username": "bob_jones",
+                        "email": "bob@example.com"
+                    }
+                }
+            ],
+            "likes": [
+                {
+                    "like_id": 4,
+                    "username": "alice_green",
+                    "email": "alice@example.com"
+                },
+                {
+                    "like_id": 5,
+                    "username": "emily_white",
+                    "email": "emily@example.com"
+                },
+                {
+                    "like_id": 6,
+                    "username": "david_black",
+                    "email": "david@example.com"
+                }
+            ]
+        }
+        ```
+
+- **Reply to Comment**
+  - URL: `/books/comment/reply/<int:comment_id>/`
+  - Method: `POST`
+  - Description: Allows an authenticated user to reply to a comment.
+  - Authentication: Required (user must be logged in).
+  - Request:
+    - Body:
+      - `content` (string, required): The content of the reply.
+  - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Comment not found"
+        }
+        ```
+
+    - Status Code: 201 Created
+      - Body:
+
+        ```json
+        {
+            "id": 7,
+            "content": "I agree with you!",
+            "date_posted": "2023-09-25T15:00:00Z",
+            "user": {
+                "username": "alice_green",
+                "email": "alice@example.com"
+            }
+        }
+        ```
+
+- **Edit Comment**
+  - URL: `/books/comment/edit/<int:comment_id>/`
+  - Method: `PUT`
+  - Description: Allows an authenticated user to edit their own comment.
+  - Authentication: Required (user must be logged in).
+  - Request:
+    - Body:
+      - `content` (string, required): The updated content of the comment.
+  - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Comment not found"
+        }
+        ```
+
+    - Status Code: 403 Forbidden
+      - Body:
+
+        ```json
+        {
+            "message": "You are not authorized to perform this action"
+        }
+        ```
+
+    - Status Code: 400 Bad Request
+      - Body:
+
+        ```json
+        {
+            "message": "Content cannot be empty"
+        }
+        ```
+
+    - Status Code: 200 OK
+      - Body:
+
+        ```json
+        {
+            "id": 1,
+            "content": "This is an updated comment.",
+            "date_posted": "2023-09-25T14:30:00Z",
+            "user": {
+                "username": "john_doe",
+                "email": "john@example.com"
+            }
+        }
+        ```
+
+- **Delete Comment**
+  - URL: `/books/comment/delete/<int:comment_id>/`
+  - Method: `DELETE`
+  - Description: Allows an authenticated user to delete their own comment.
+  - Authentication: Required (user must be logged in).
+  - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Comment not found"
+        }
+        ```
+
+    - Status Code: 403 Forbidden
+      - Body:
+
+        ```json
+        {
+            "message": "You are not authorized to perform this action"
+        }
+        ```
+
+    - Status Code: 200 OK
+      - Body:
+
+        ```json
+        {
+            "message": "Comment deleted successfully"
+        }
+        ```
+
+- **Like Comment**
+  - URL: `/books/comment/like/<int:comment_id>/`
+  - Method: `POST`
+  - Description: Allows an authenticated user to like or unlike a comment.
+  - Authentication: Required (user must be logged in).
+  - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Comment not found"
+        }
+        ```
+
+    - Status Code: 200 OK
+      - Body (when liking a comment):
+
+        ```json
+        {
+            "message": "Comment liked"
+        }
+        ```
+
+      - Body (when unliking a comment):
+
+        ```json
+        {
+            "message": "Comment unliked"
+        }
+        ```
+
+- **Get Comment Likes**
+  - URL: `/books/comment/likes/<int:comment_id>/`
+  - Method: `GET`
+  - Description: Retrieves a list of users who have liked a comment.
+  - Authentication: Required (user must be logged in).
+  - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Comment not found"
+        }
+        ```
+
+    - Status Code: 200 OK
+      - Body:
+
+        ```json
+        {
+            "likes": [
+                {
+                    "id": 4,
+                    "username": "alice_green",
+                    "email": "alice@example.com"
+                },
+                {
+                    "id": 5,
+                    "username": "emily_white",
+                    "email": "emily@example.com"
+                },
+                {
+                    "id": 6,
+                    "username": "david_black",
+                    "email": "david@example.com"
+                }
+            ],
+            "like_count": 3
+        }
+        ```
 
 - **Add Rating View**
   - URL: `/books/rate/<int:id>/`

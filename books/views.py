@@ -1,5 +1,9 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    authentication_classes,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -115,7 +119,6 @@ def bookView(request, id: int):
 
 
 # localhost:8000/books/upload/ (name='upload_book')
-@csrf_protect
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -161,7 +164,6 @@ def uploadBookView(request):
 
 
 # localhost:8000/books/<int:id>/update/ (name='update_book')
-@csrf_protect
 @api_view(["PATCH"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -218,7 +220,6 @@ def updateBookView(request, id: int):
 
 
 # localhost:8000/books/<int:id>/update/ (name='update_book')
-@csrf_protect
 @api_view(["DELETE"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -243,15 +244,14 @@ def deleteBookView(request, id: int):
     return Response({"message": "Book deleted successfully"}, status=status.HTTP_200_OK)
 
 
-# localhost:8000/books/comment/<int:id>/ (name='add_comment')
-@csrf_protect
+# localhost:8000/books/comment/add/<int:book_id>/ (name='add_comment')
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def addCommentsView(request, id: int):
+def addCommentsView(request, book_id: int):
     # Check if book exists
     try:
-        book = Book.objects.get(id=id)
+        book = Book.objects.get(id=book_id)
     except Book.DoesNotExist:
         return Response(
             {"message": "Book not found"},
@@ -279,8 +279,228 @@ def addCommentsView(request, id: int):
     return Response(data, status=status.HTTP_201_CREATED)
 
 
+# localhost:8000/books/comment/<int:comment_id>/ (name='comment_detail')
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def commentView(request, comment_id: int):
+    # Check if comment exists
+    try:
+        comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"message": "Comment not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Get list of replies under the comment
+    replies = Comment.objects.filter(parent_comment_id=comment_id)
+    # Get list of likes
+    likes = comment.likes.all()
+
+    # Create a dictionary containing comment details
+    data = {
+        "id": comment.id,
+        "content": comment.content,
+        "date_posted": comment.date_posted,
+        "user": {
+            "username": comment.user.username,
+            "email": comment.user.email,
+        },
+        "reply_count": len(replies),
+        "like_count": len(likes),
+        "replies": [
+            {
+                "reply_id": reply.id,
+                "content": reply.content,
+                "date_posted": reply.date_posted,
+                "user": {
+                    "username": reply.user.username,
+                    "email": reply.user.email,
+                },
+            }
+            for reply in replies
+        ],
+        "likes": [
+            {
+                "like_id": like.id,
+                "username": like.username,
+                "email": like.email,
+            }
+            for like in likes
+        ],
+    }
+
+    # Return the comment as JSON
+    return Response(data, status=status.HTTP_200_OK)
+
+
+# localhost:8000/books/comment/reply/<int:comment_id>/ (name='reply_comment')
+@api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def replyToCommentView(request, comment_id):
+    try:
+        parent_comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"message": "Comment not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    content = request.data.get("content")
+    user = request.user
+
+    comment = Comment.objects.create(
+        content=content,
+        book=parent_comment.book,
+        user=user,
+        parent_comment=parent_comment,
+    )
+
+    data = {
+        "id": comment.id,
+        "content": comment.content,
+        "date_posted": comment.date_posted,
+        "user": {
+            "username": comment.user.username,
+            "email": comment.user.email,
+        },
+    }
+    return Response(data, status=status.HTTP_201_CREATED)
+
+
+# localhost:8000/books/comment/edit/<int:comment_id>/ (name='edit_comment')
+@api_view(["PUT"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def editCommentView(request, comment_id):
+    # Check if comment exists
+    try:
+        comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"message": "Comment not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Check if user is the author of the comment
+    if comment.user != request.user:
+        return Response(
+            {"message": "You are not authorized to perform this action"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    content = request.data.get("content")
+    if not content:
+        return Response(
+            {"message": "Content cannot be empty"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    comment.content = content
+    comment.save()
+
+    data = {
+        "id": comment.id,
+        "content": comment.content,
+        "date_posted": comment.date_posted,
+        "user": {
+            "username": comment.user.username,
+            "email": comment.user.email,
+        },
+    }
+    return Response(data, status=status.HTTP_200_OK)
+
+
+# localhost:8000/books/comment/delete/<int:comment_id>/ (name='delete_comment')
+@api_view(["DELETE"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def deleteCommentView(request, comment_id):
+    # Check if comment exists
+    try:
+        comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"message": "Comment not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Check if user is the author of the comment
+    if comment.user != request.user:
+        return Response(
+            {"message": "You are not authorized to perform this action"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    comment.delete()
+    return Response(
+        {"message": "Comment deleted successfully"}, status=status.HTTP_200_OK
+    )
+
+
+# localhost:8000/books/comment/like/<int:comment_id>/ (name='like_comment')
+@api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def likeCommentView(request, comment_id):
+    # Check if comment exists
+    try:
+        comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"message": "Comment not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Check if user has already liked the comment
+    if comment.likes.filter(id=request.user.id).exists():
+        # Unlike comment
+        comment.likes.remove(request.user)
+        comment.save()
+        return Response({"message": "Comment unliked"}, status=status.HTTP_200_OK)
+
+    # Like comment
+    comment.likes.add(request.user)
+    comment.save()
+    return Response({"message": "Comment liked"}, status=status.HTTP_200_OK)
+
+
+# localhost:8000/books/comment/likes/<int:comment_id>/ (name='get_comment_likes')
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def getCommentLikesView(request, comment_id):
+    # Check if comment exists
+    try:
+        comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"message": "Comment not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Get list of users who liked the comment
+    likes = comment.likes.all()
+
+    # Create a list of dictionaries containing user details from the likes list
+    data = [
+        {
+            "id": like.id,
+            "username": like.username,
+            "email": like.email,
+        }
+        for like in likes
+    ]
+
+    # Return the list of users as JSON
+    return Response(
+        {"likes": data, "like_count": len(likes)}, status=status.HTTP_200_OK
+    )
+
+
 # localhost:8000/books/rate/<int:id>/ (name='add_rating')
-@csrf_protect
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -293,7 +513,7 @@ def addRatingView(request, id: int):
             {"message": "Book not found"},
             status=status.HTTP_404_NOT_FOUND,
         )
-    
+
     # Access HttpRequest object
     http_request = request._request
     # Get rating details from request
