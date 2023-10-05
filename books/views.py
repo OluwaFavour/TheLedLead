@@ -199,7 +199,6 @@ def updateBookView(request, id: int):
             book.content = content
         if image_url:
             book.image_url = image_url
-        book.date_published = datetime.now()
 
         # Save update
         book.save()
