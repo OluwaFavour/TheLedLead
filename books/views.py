@@ -516,7 +516,9 @@ def addRatingView(request, id: int):
     # Access HttpRequest object
     http_request = request._request
     # Get rating details from request
-    rating = int(http_request.POST.get("rating"))
+    rating_str = http_request.POST.get("rating")
+    
+    rating = int(rating_str)
     # Check if rating is valid
     if rating < 1 or rating > 5:
         return Response(
