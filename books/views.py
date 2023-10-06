@@ -517,8 +517,6 @@ def addRatingView(request, id: int):
     http_request = request._request
     # Get rating details from request
     rating_str = request.data.get("rating")
-    
-    print(rating_str)
     rating = int(rating_str)
     # Check if rating is valid
     if rating < 1 or rating > 5:
