@@ -30,7 +30,7 @@ def knoxLogin(user: AbstractBaseUser):
             {
                 "message": "Login successful",
                 "user": {"id": user.id, "username": user.username, "email": user.email},
-                "is_admin": user.is_superuser,
+                "is_admin": user.is_staff,
                 "token": token,
             },
             status=status.HTTP_200_OK,
