@@ -14,14 +14,13 @@ def book_image_path(instance, filename):
 class Book(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
     image_url = models.ImageField(upload_to=book_image_path, blank=True, null=True)
-    test = models.CharField(max_length=255, blank=False, null=False)
-    image_url_link = models.URLField(blank=True, null=True)
     content = models.TextField(blank=False, null=False)
     date_published = models.DateTimeField(auto_now=True)
     read_by = models.ManyToManyField(
         User, through="ReadBook", related_name="books_read", blank=True
     )
     published_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    image_url_link = models.URLField(blank=True, null=True)
 
     class Meta:
         ordering = ["-date_published"]
