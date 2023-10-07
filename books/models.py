@@ -14,7 +14,6 @@ def book_image_path(instance, filename):
 class Book(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
     image_url = models.ImageField(upload_to=book_image_path, blank=True, null=True)
-    image_url_link = models.URLField(blank=True, null=True)
     content = models.TextField(blank=False, null=False)
     date_published = models.DateTimeField(auto_now=True)
     read_by = models.ManyToManyField(
