@@ -1,3 +1,4 @@
+from urllib.parse import unquote
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -7,6 +8,7 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import cloudinary.uploader
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 from knox.auth import TokenAuthentication
@@ -36,7 +38,7 @@ class ListBooksView(APIView):
             {
                 "id": book.id,
                 "title": book.title,
-                "image_url": book.image_url.url if book.image_url else "",
+                "image_url": book.image_url_link if book.image_url_link else "",
                 "content": book.content,
                 "date_published": book.date_published,
                 "published_by": {
@@ -76,7 +78,7 @@ def bookView(request, id: int):
     data = {
         "id": book.id,
         "title": book.title,
-        "image_url": book.image_url.url if book.image_url else "",
+        "image_url": book.image_url_link if book.image_url_link else "",
         "content": book.content,
         "date_published": book.date_published,
         "published_by": {
@@ -144,15 +146,28 @@ def uploadBookView(request):
     published_by = http_request.user
 
     # Create book
-    book = Book.objects.create(
-        title=title, content=content, image_url=image_url, published_by=published_by
-    )
+    try:
+        book = Book.objects.create(
+            title=title, content=content, image_url=image_url, published_by=published_by
+        )
+        upload_result = cloudinary.uploader.upload(
+            f"{unquote(book.image_url.url.lstrip('/'))}",
+            folder=f"book_covers/{book.title}",
+            use_filename=True,
+            unique_filename=True,
+        )
+        book.image_url_link = upload_result["secure_url"]
+    except Exception as e:
+        return Response(
+            {"message": f"An error occurred while uploading the book\nError: {e}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     # Return the book as JSON
     data = {
         "id": book.id,
         "title": book.title,
-        "image_url": book.image_url.url if book.image_url else "",
+        "image_url": book.image_url_link if book.image_url_link else "",
         "content": book.content,
         "date_published": book.date_published,
         "published_by": {
@@ -199,6 +214,20 @@ def updateBookView(request, id: int):
             book.content = content
         if image_url:
             book.image_url = image_url
+            try:
+                book.image_url_link = cloudinary.uploader.upload(
+                    f"{unquote(book.image_url.url.lstrip('/'))}",
+                    folder=f"book_covers/{book.title}",
+                    use_filename=True,
+                    unique_filename=True,
+                )["secure_url"]
+            except Exception as e:
+                return Response(
+                    {
+                        "message": f"An error occurred while uploading the book\nError: {e}"
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
         # Save update
         book.save()
@@ -207,7 +236,7 @@ def updateBookView(request, id: int):
         data = {
             "id": book.id,
             "title": book.title,
-            "image_url": book.image_url.url if book.image_url else "",
+            "image_url": book.image_url_link if book.image_url_link else "",
             "content": book.content,
             "date_published": book.date_published,
             "published_by": {
