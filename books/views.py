@@ -92,6 +92,7 @@ def bookView(request, id: int):
                 "date_posted": comment.date_posted,
                 "user": {
                     "username": comment.user.username,
+                    "is_admin": comment.user.is_staff,
                     "email": comment.user.email,
                 },
             }
