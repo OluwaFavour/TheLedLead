@@ -64,7 +64,7 @@ def bookView(request, id: int):
     # Get book
     book = get_object_or_404(Book, id=id)
     # Get list of comments under the book
-    comments = Comment.objects.filter(book_id=id)
+    comments = Comment.objects.filter(parent_comment__isnull=True, book_id=id)
     # Get list of ratings
     ratings = Rating.objects.filter(book_id=id)
     # Get average rating
