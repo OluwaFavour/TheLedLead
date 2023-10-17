@@ -157,6 +157,7 @@ def uploadBookView(request):
             unique_filename=True,
         )
         book.image_url_link = upload_result["secure_url"]
+        book.save()
     except Exception as e:
         return Response(
             {"message": f"An error occurred while uploading the book\nError: {e}"},
