@@ -272,7 +272,7 @@ The URL for the API is <https://theledlead.onrender.com/>
 - **Book View**
   - URL: `/books/{id}/` or `tll-admin/books/{id}/`
   - Method: `GET`
-  - Description: Retrieve details of a book including comments, ratings, and reader information.
+  - Description: Retrieve details of a book including ratings, and reader information.
   - Authentication: Required.
   - Request:
     - Body: None
@@ -291,26 +291,6 @@ The URL for the API is <https://theledlead.onrender.com/>
                 "username": "author123",
                 "email": "author@example.com"
             },
-            "comments": [
-                {
-                    "id": 101,
-                    "content": "Great book!",
-                    "date_posted": "2023-09-22T08:45:00Z",
-                    "user": {
-                        "username": "user456",
-                        "email": "user456@example.com"
-                    }
-                },
-                {
-                    "id": 102,
-                    "content": "I loved it!",
-                    "date_posted": "2023-09-23T14:20:00Z",
-                    "user": {
-                        "username": "user789",
-                        "email": "user789@example.com"
-                    }
-                }
-            ],
             "ratings": [
                 {
                     "id": 201,
@@ -329,7 +309,6 @@ The URL for the API is <https://theledlead.onrender.com/>
                     }
                 }
             ],
-            "total_comments": 2,
             "average_rating": 4.5
         }
         ```
@@ -525,6 +504,51 @@ The URL for the API is <https://theledlead.onrender.com/>
   - Additional Notes:
     - This endpoint requires user authentication, and the user must have staff privileges to delete a book.
 
+- **List Comments View**
+  - URL: `/books/comment/list/<int:book_id>/`
+  - Method: `GET`
+  - Description: Retrieve a list of all the comments under a book including the comment count.
+  - Authentication: Required.
+  - Request:
+    - Body: None
+  - Responses:
+    - Status Code: 404 Not Found
+      - Body:
+
+        ```json
+        {
+            "message": "Book not found"
+        }
+        ```
+
+    - Status Code: 200 OK
+      - Body:
+
+        ```json
+        {
+          "comments": [
+                {
+                    "id": 101,
+                    "content": "Great book!",
+                    "date_posted": "2023-09-22T08:45:00Z",
+                    "user": {
+                        "username": "user456",
+                        "email": "user456@example.com"
+                    }
+                },
+                {
+                    "id": 102,
+                    "content": "I loved it!",
+                    "date_posted": "2023-09-23T14:20:00Z",
+                    "user": {
+                        "username": "user789",
+                        "email": "user789@example.com"
+                    }
+                }
+            ],
+        }
+        ```
+
 - **Add Comment to a Book**
   - URL: `/books/comment/add/<int:id>/`
   - Method: `POST`
@@ -578,9 +602,9 @@ The URL for the API is <https://theledlead.onrender.com/>
           ```
 
 - **View Comment**
-  - URL: `/books/comment/<int:comment_id>/`
+  - URL: `/books/comment/reply/list/<int:comment_id>/`
   - Method: `GET`
-  - Description: Retrieves details about a specific comment, including its replies and likes.
+  - Description: Retrieves a list of replies to a comment including the reply count.
   - Authentication: Required (user must be logged in).
   - Responses:
     - Status Code: 404 Not Found
@@ -597,15 +621,6 @@ The URL for the API is <https://theledlead.onrender.com/>
 
         ```json
         {
-            "id": 1,
-            "content": "This is a great book!",
-            "date_posted": "2023-09-25T14:30:00Z",
-            "user": {
-                "username": "john_doe",
-                "email": "john@example.com"
-            },
-            "reply_count": 2,
-            "like_count": 3,
             "replies": [
                 {
                     "reply_id": 2,
@@ -626,23 +641,7 @@ The URL for the API is <https://theledlead.onrender.com/>
                     }
                 }
             ],
-            "likes": [
-                {
-                    "like_id": 4,
-                    "username": "alice_green",
-                    "email": "alice@example.com"
-                },
-                {
-                    "like_id": 5,
-                    "username": "emily_white",
-                    "email": "emily@example.com"
-                },
-                {
-                    "like_id": 6,
-                    "username": "david_black",
-                    "email": "david@example.com"
-                }
-            ]
+            "reply_count": 2
         }
         ```
 

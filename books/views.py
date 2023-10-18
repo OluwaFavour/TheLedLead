@@ -63,8 +63,10 @@ class ListBooksView(APIView):
 def bookView(request, id: int):
     # Get book
     book = get_object_or_404(Book, id=id)
-    # Get list of comments under the book
-    comments = Comment.objects.filter(parent_comment__isnull=True, book_id=id)
+    # Get number of comments under the book
+    num_comments = Comment.objects.filter(
+        parent_comment__isnull=True, book_id=id
+    ).count()
     # Get list of ratings
     ratings = Rating.objects.filter(book_id=id)
     # Get average rating
@@ -85,19 +87,6 @@ def bookView(request, id: int):
             "username": book.published_by.username if book.published_by else "",
             "email": book.published_by.email if book.published_by else "",
         },
-        "comments": [
-            {
-                "id": comment.id,
-                "content": comment.content,
-                "date_posted": comment.date_posted,
-                "user": {
-                    "username": comment.user.username,
-                    "is_admin": comment.user.is_staff,
-                    "email": comment.user.email,
-                },
-            }
-            for comment in comments
-        ],
         "ratings": [
             {
                 "id": rating.id,
@@ -109,7 +98,7 @@ def bookView(request, id: int):
             }
             for rating in ratings
         ],
-        "total_comments": len(comments),
+        "total_comments": num_comments,
         "average_rating": average_rating,
     }
 
@@ -274,6 +263,43 @@ def deleteBookView(request, id: int):
     return Response({"message": "Book deleted successfully"}, status=status.HTTP_200_OK)
 
 
+# localhost:8000/books/comment/list/<int:book_id>/ (name='list_comments')
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def listCommentsView(request, book_id: int):
+    # Check if book exists
+    try:
+        book = Book.objects.get(id=book_id)
+    except Book.DoesNotExist:
+        return Response(
+            {"message": "Book not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    # Get list of comments under the book
+    comments = Comment.objects.filter(parent_comment__isnull=True, book_id=book_id)
+
+    # Create a list of dictionaries containing comment details from the comments list
+    data = [
+        {
+            "id": comment.id,
+            "content": comment.content,
+            "date_posted": comment.date_posted,
+            "user": {
+                "username": comment.user.username,
+                "is_admin": comment.user.is_staff,
+                "email": comment.user.email,
+            },
+        }
+        for comment in comments
+    ]
+
+    # Return the list of comments as JSON
+    return Response(
+        {"comments": data, "comment_count": len(comments)}, status=status.HTTP_200_OK
+    )
+
+
 # localhost:8000/books/comment/add/<int:book_id>/ (name='add_comment')
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
@@ -309,11 +335,11 @@ def addCommentsView(request, book_id: int):
     return Response(data, status=status.HTTP_201_CREATED)
 
 
-# localhost:8000/books/comment/<int:comment_id>/ (name='comment_detail')
+# localhost:8000/books/comment/reply/list/<int:comment_id>/ (name='list_replies')
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def commentView(request, comment_id: int):
+def listRepliesView(request, comment_id: int):
     # Check if comment exists
     try:
         comment = Comment.objects.get(id=comment_id)
@@ -325,44 +351,26 @@ def commentView(request, comment_id: int):
 
     # Get list of replies under the comment
     replies = Comment.objects.filter(parent_comment_id=comment_id)
-    # Get list of likes
-    likes = comment.likes.all()
 
-    # Create a dictionary containing comment details
-    data = {
-        "id": comment.id,
-        "content": comment.content,
-        "date_posted": comment.date_posted,
-        "user": {
-            "username": comment.user.username,
-            "email": comment.user.email,
-        },
-        "reply_count": len(replies),
-        "like_count": len(likes),
-        "replies": [
-            {
-                "reply_id": reply.id,
-                "content": reply.content,
-                "date_posted": reply.date_posted,
-                "user": {
-                    "username": reply.user.username,
-                    "email": reply.user.email,
-                },
-            }
-            for reply in replies
-        ],
-        "likes": [
-            {
-                "like_id": like.id,
-                "username": like.username,
-                "email": like.email,
-            }
-            for like in likes
-        ],
-    }
+    # Create a list of dictionaries containing reply details from the replies list
+    data = [
+        {
+            "reply_id": reply.id,
+            "content": reply.content,
+            "date_posted": reply.date_posted,
+            "user": {
+                "username": reply.user.username,
+                "is_admin": reply.user.is_staff,
+                "email": reply.user.email,
+            },
+        }
+        for reply in replies
+    ]
 
-    # Return the comment as JSON
-    return Response(data, status=status.HTTP_200_OK)
+    # Return the replies as JSON
+    return Response(
+        {"replies": data, "reply_count": len(replies)}, status=status.HTTP_200_OK
+    )
 
 
 # localhost:8000/books/comment/reply/<int:comment_id>/ (name='reply_comment')
