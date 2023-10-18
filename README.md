@@ -297,7 +297,8 @@ The URL for the API is <https://theledlead.onrender.com/>
                     "rating": 5,
                     "user": {
                         "username": "user456",
-                        "email": "user456@example.com"
+                        "email": "user456@example.com",
+                        "is_admin": False
                     }
                 },
                 {
@@ -305,7 +306,8 @@ The URL for the API is <https://theledlead.onrender.com/>
                     "rating": 4,
                     "user": {
                         "username": "user789",
-                        "email": "user789@example.com"
+                        "email": "user789@example.com",
+                        "is_admin": True
                     }
                 }
             ],
