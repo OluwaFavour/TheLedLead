@@ -603,7 +603,7 @@ The URL for the API is <https://theledlead.onrender.com/>
           }
           ```
 
-- **View Comment**
+- **List Replies View**
   - URL: `/books/comment/reply/list/<int:comment_id>/`
   - Method: `GET`
   - Description: Retrieves a list of replies to a comment including the reply count.
